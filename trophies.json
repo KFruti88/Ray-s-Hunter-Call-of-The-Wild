@@ -85,5 +85,6 @@
   { "id": "e-coast", "name": "Emerald Coast Explorer", "current": 0, "goal": 1, "category": "Emerald Coast" },
   { "id": "e-kangaroo", "name": "Boxing Match", "current": 0, "goal": 1, "category": "Emerald Coast" },
   { "id": "s-sunda", "name": "Sunda Safari", "current": 0, "goal": 1, "category": "Sundapatan" },
-  { "id": "s-rhino", "name": "The Great Horn", "current": 0, "goal": 1, "category": "Sundapatan" }
+  { "id": "s-rhino", "name": "The Great Horn", "current": 0, "goal": 1, "category": "Sundapatan" },
+  { "id": "rkudu", "name": "Camouflage (50 Lesser Kudu Spotted)", "current": 0, "goal": 50, "category": "Vurhonga Savanna" },
 ]
