@@ -1,0 +1,28 @@
+name: Sync StreamElements Stats
+on:
+  schedule:
+    - cron: '*/10 * * * *' # Runs every 10 minutes
+  workflow_dispatch: # Allows you to run it manually
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Fetch from StreamElements
+        run: |
+          # Fetch spturkey from your Account ID
+          TURKEY_VAL=$(curl -s "https://api.streamelements.com/static/v2/channels/683d5f784b7b70b6bf43aacb/counters/spturkey" | jq '.value')
+          
+          # Use 'sed' to update the "current" value for spturkey in your JSON file
+          sed -i "s/\"id\": \"spturkey\", \"name\": \"Silver Ridge: Gobble Gobble\", \"current\": [0-9]*/\"id\": \"spturkey\", \"name\": \"Silver Ridge: Gobble Gobble\", \"current\": $TURKEY_VAL/" trophies.json
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name 'Stats Bot'
+          git config --global user.email 'bot@github.com'
+          git add trophies.json
+          git commit -m "Automated Sync from StreamElements" || exit 0
+          git push
