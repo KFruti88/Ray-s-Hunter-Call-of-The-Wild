@@ -5,7 +5,7 @@ on:
   workflow_dispatch: # Allows manual trigger
 
 permissions:
-  contents: write # Grants bot permission to save changes
+  contents: write
 
 jobs:
   sync-stats:
@@ -22,14 +22,14 @@ jobs:
             JSON_ID=$1
             COMMAND=$2
             RAW=$(curl -s "https://api.streamelements.com/static/v2/channels/$ACC_ID/counters/$COMMAND")
-            VAL=$(echo $RAW | jq -r '.value // 0') # Null safety
+            VAL=$(echo $RAW | jq -r '.value // 0')
             
             if [ "$VAL" != "0" ] && [ "$VAL" != "null" ]; then
               jq --arg id "$JSON_ID" --arg val "$VAL" '(.[] | select(.id == $id) | .current) = ($val | tonumber)' trophies.json > temp.json && mv temp.json trophies.json
             fi
           }
 
-          # Syncing all your active grinds
+          # Syncing your active grinds
           sync_counter "spturkey" "spturkey"
           sync_counter "rcrocodile" "rcrocodile"
           sync_counter "rbanteng" "rbanteng"
@@ -38,6 +38,7 @@ jobs:
           sync_counter "rart" "rart"
           sync_counter "rpilgrim" "rpilgrim"
           sync_counter "rsheds" "rsheds"
+          sync_counter "rkudu" "rkudu"
 
       - name: Commit and Push
         run: |
