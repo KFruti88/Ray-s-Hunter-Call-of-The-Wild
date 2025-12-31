@@ -60,4 +60,5 @@
   { "id": "ascended", "name": "✅ Ascended", "current": 1, "goal": 1, "category": "Silver Ridge Peaks" }
   { "id": "rpaleo", "name": "Paleontology 101", "current": 0, "goal": 20, "category": "Medved-Taiga" }
   { "id": "rart", "name": "Art Critic (Cave Paintings)", "current": 0, "goal": 10, "category": "Medved-Taiga" }
+  { "id": "rpilgrim", "name": "Pilgrim (Nenet Monuments)", "current": 0, "goal": 10, "category": "Medved-Taiga" }
 ]
