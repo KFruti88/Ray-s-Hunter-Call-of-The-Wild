@@ -88,4 +88,5 @@
   { "id": "s-rhino", "name": "The Great Horn", "current": 0, "goal": 1, "category": "Sundapatan" },
   { "id": "rkudu", "name": "Camouflage (50 Lesser Kudu Spotted)", "current": 0, "goal": 50, "category": "Vurhonga Savanna" },
   { "id": "rspringbok", "name": "Springbok City (25 Springbok Harvested)", "current": 0, "goal": 25, "category": "Vurhonga Savanna" },
+  { "id": "rlion", "name": "The Lion of Vurhonga (8 Subregions)", "current": 0, "goal": 8, "category": "Vurhonga Savanna" },
 ]
