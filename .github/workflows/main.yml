@@ -16,43 +16,30 @@ jobs:
 
       - name: Sync StreamElements Data
         run: |
-          # --- 1. SET UP ACCOUNT ID ---
           ACC_ID="683d5f784b7b70b6bf43aacb"
-
-          # --- 2. DEFINE COUNTERS TO FETCH ---
-          # Format: ID_IN_JSON:COMMAND_NAME_IN_SE
-          # spturkey:spturkey
-          # rcrocodile:rcrocodile
-          # rbanteng:rbanteng
-          # rlevel:rlevel
-          # rpaleo:rpaleo
 
           sync_counter() {
             JSON_ID=$1
             COMMAND=$2
-            
-            # Fetch raw data
             RAW=$(curl -s "https://api.streamelements.com/static/v2/channels/$ACC_ID/counters/$COMMAND")
-            # Extract value with null safety
-            VAL=$(echo $RAW | jq -r '.value // 0')
+            VAL=$(echo $RAW | jq -r '.value // 0') # Null safety
             
-            # Only update JSON if the value is a valid number greater than 0
             if [ "$VAL" != "0" ] && [ "$VAL" != "null" ]; then
               jq --arg id "$JSON_ID" --arg val "$VAL" '(.[] | select(.id == $id) | .current) = ($val | tonumber)' trophies.json > temp.json && mv temp.json trophies.json
             fi
           }
 
-          # --- 3. EXECUTE SYNC FOR EACH TRACKED TROPHY ---
+          # Syncing all your active grinds
           sync_counter "spturkey" "spturkey"
           sync_counter "rcrocodile" "rcrocodile"
           sync_counter "rbanteng" "rbanteng"
           sync_counter "rlevel" "rlevel"
           sync_counter "rpaleo" "rpaleo"
+          sync_counter "rart" "rart"
 
       - name: Commit and Push
         run: |
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "actions@github.com"
           git add trophies.json
-          # Commit only if data actually changed
           git diff --quiet && git diff --staged --quiet || (git commit -m "Automated sync: $(date)" && git push)
