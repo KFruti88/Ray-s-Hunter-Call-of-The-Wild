@@ -2,10 +2,10 @@ name: Sync Trophy Stats
 on:
   schedule:
     - cron: '*/10 * * * *' # Runs every 10 minutes
-  workflow_dispatch: # Allows manual run
+  workflow_dispatch: # Allows manual run from Actions tab
 
 permissions:
-  contents: write
+  contents: write # Required to save changes back to trophies.json
 
 jobs:
   sync-stats:
@@ -18,15 +18,15 @@ jobs:
         run: |
           # 1. FETCH TURKEY DATA
           TURKEY_RAW=$(curl -s "https://api.streamelements.com/static/v2/channels/683d5f784b7b70b6bf43aacb/counters/spturkey")
-          # Extract value; if null or missing, default to 0
+          # Extract value; if null or missing, default to 0 to prevent jq errors
           TURKEY_VAL=$(echo $TURKEY_RAW | jq -r '.value // 0')
 
-          # 2. UPDATE TURKEY IN JSON
+          # 2. UPDATE TURKEY IN JSON (Only if value is not 0 to avoid wiping data)
           if [ "$TURKEY_VAL" != "0" ]; then
             jq --arg val "$TURKEY_VAL" '(.[] | select(.id == "spturkey") | .current) = ($val | tonumber)' trophies.json > temp.json && mv temp.json trophies.json
           fi
 
-          # 3. FETCH CROCODILE DATA (Optional extra example)
+          # 3. FETCH CROCODILE DATA
           CROC_RAW=$(curl -s "https://api.streamelements.com/static/v2/channels/683d5f784b7b70b6bf43aacb/counters/rcrocodile")
           CROC_VAL=$(echo $CROC_RAW | jq -r '.value // 0')
           
@@ -39,4 +39,5 @@ jobs:
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "actions@github.com"
           git add trophies.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Automated sync: $(date)" && git push)
+          # Only commit and push if there is an actual change to the numbers
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Automated trophy sync: $(date)" && git push)
