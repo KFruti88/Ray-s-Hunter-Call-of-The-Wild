@@ -37,6 +37,7 @@ jobs:
           sync_counter "rpaleo" "rpaleo"
           sync_counter "rart" "rart"
           sync_counter "rpilgrim" "rpilgrim"
+          sync_counter "rsheds" "rsheds"
 
       - name: Commit and Push
         run: |
