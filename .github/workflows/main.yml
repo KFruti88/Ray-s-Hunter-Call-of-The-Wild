@@ -1,35 +1,42 @@
 name: Sync Trophy Stats
 on:
   schedule:
-    - cron: '0 * * * *' # Runs once every hour
-  workflow_dispatch: # Allows you to run it manually from the Actions tab
+    - cron: '*/10 * * * *' # Runs every 10 minutes
+  workflow_dispatch: # Allows manual run
 
 permissions:
-  contents: write # Required to allow the bot to save changes to your repo
+  contents: write
 
 jobs:
   sync-stats:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4 # Downloads your code so the bot can edit it
+        uses: actions/checkout@v4
 
-      - name: Fetch StreamElements Data
+      - name: Sync StreamElements Data
         run: |
-          # Fetch your spturkey counter value
-          # Account ID: 683d5f784b7b70b6bf43aacb
-          RESPONSE=$(curl -s "https://api.streamelements.com/static/v2/channels/683d5f784b7b70b6bf43aacb/counters/spturkey")
-          
-          # Extract the count value using jq
-          COUNT=$(echo $RESPONSE | jq -r '.count')
-          
-          # Update the 'current' value for the 'spturkey' item in your trophies.json
-          jq --arg new_val "$COUNT" '(.[] | select(.id == "spturkey") | .current) = ($new_val | tonumber)' trophies.json > temp.json && mv temp.json trophies.json
+          # 1. FETCH TURKEY DATA
+          TURKEY_RAW=$(curl -s "https://api.streamelements.com/static/v2/channels/683d5f784b7b70b6bf43aacb/counters/spturkey")
+          # Extract value; if null or missing, default to 0
+          TURKEY_VAL=$(echo $TURKEY_RAW | jq -r '.value // 0')
 
-      - name: Commit and Push Changes
+          # 2. UPDATE TURKEY IN JSON
+          if [ "$TURKEY_VAL" != "0" ]; then
+            jq --arg val "$TURKEY_VAL" '(.[] | select(.id == "spturkey") | .current) = ($val | tonumber)' trophies.json > temp.json && mv temp.json trophies.json
+          fi
+
+          # 3. FETCH CROCODILE DATA (Optional extra example)
+          CROC_RAW=$(curl -s "https://api.streamelements.com/static/v2/channels/683d5f784b7b70b6bf43aacb/counters/rcrocodile")
+          CROC_VAL=$(echo $CROC_RAW | jq -r '.value // 0')
+          
+          if [ "$CROC_VAL" != "0" ]; then
+            jq --arg val "$CROC_VAL" '(.[] | select(.id == "rcrocodile") | .current) = ($val | tonumber)' trophies.json > temp.json && mv temp.json trophies.json
+          fi
+
+      - name: Commit and Push
         run: |
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "actions@github.com"
           git add trophies.json
-          # Only commit if there is an actual change to the numbers
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Automated trophy sync: $(date)" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Automated sync: $(date)" && git push)
