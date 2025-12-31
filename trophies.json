@@ -1,0 +1,8 @@
+[
+  { "id": "lvl", "name": "Level 60 Achievement", "current": 55, "goal": 60, "type": "prog" },
+  { "id": "ultramarathon", "name": "The Ultramarathon", "current": 100, "goal": 100, "type": "done" },
+  { "id": "croc", "name": "Crocodile Harvests", "current": 45, "goal": 100, "type": "prog" },
+  { "id": "banteng", "name": "Banteng Harvests", "current": 15, "goal": 50, "type": "prog" },
+  { "id": "moose", "name": "Moose Harvests", "current": 3, "goal": 50, "type": "prog" },
+  { "id": "spturkey", "name": "Gobble Gobble (Turkeys)", "current": 0, "goal": 50, "type": "live" }
+]
