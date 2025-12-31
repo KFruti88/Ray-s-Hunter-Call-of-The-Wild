@@ -48,6 +48,7 @@ jobs:
           sync_counter "rsheds" "rsheds"
           sync_counter "rkudu" "rkudu"
           sync_counter "rspringbok" "rspringbok"
+          sync_counter "rlion" "vlion"
 
       - name: Commit and Push
         run: |
