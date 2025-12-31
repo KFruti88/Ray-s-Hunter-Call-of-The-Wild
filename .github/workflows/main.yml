@@ -2,10 +2,10 @@ name: Sync Trophy Stats
 on:
   schedule:
     - cron: '*/10 * * * *' # Runs every 10 minutes
-  workflow_dispatch: # Allows manual run from Actions tab
+  workflow_dispatch: # Allows manual trigger
 
 permissions:
-  contents: write # Required to save changes back to trophies.json
+  contents: write # Grants bot permission to save changes
 
 jobs:
   sync-stats:
@@ -16,28 +16,43 @@ jobs:
 
       - name: Sync StreamElements Data
         run: |
-          # 1. FETCH TURKEY DATA
-          TURKEY_RAW=$(curl -s "https://api.streamelements.com/static/v2/channels/683d5f784b7b70b6bf43aacb/counters/spturkey")
-          # Extract value; if null or missing, default to 0 to prevent jq errors
-          TURKEY_VAL=$(echo $TURKEY_RAW | jq -r '.value // 0')
+          # --- 1. SET UP ACCOUNT ID ---
+          ACC_ID="683d5f784b7b70b6bf43aacb"
 
-          # 2. UPDATE TURKEY IN JSON (Only if value is not 0 to avoid wiping data)
-          if [ "$TURKEY_VAL" != "0" ]; then
-            jq --arg val "$TURKEY_VAL" '(.[] | select(.id == "spturkey") | .current) = ($val | tonumber)' trophies.json > temp.json && mv temp.json trophies.json
-          fi
+          # --- 2. DEFINE COUNTERS TO FETCH ---
+          # Format: ID_IN_JSON:COMMAND_NAME_IN_SE
+          # spturkey:spturkey
+          # rcrocodile:rcrocodile
+          # rbanteng:rbanteng
+          # rlevel:rlevel
+          # rpaleo:rpaleo
 
-          # 3. FETCH CROCODILE DATA
-          CROC_RAW=$(curl -s "https://api.streamelements.com/static/v2/channels/683d5f784b7b70b6bf43aacb/counters/rcrocodile")
-          CROC_VAL=$(echo $CROC_RAW | jq -r '.value // 0')
-          
-          if [ "$CROC_VAL" != "0" ]; then
-            jq --arg val "$CROC_VAL" '(.[] | select(.id == "rcrocodile") | .current) = ($val | tonumber)' trophies.json > temp.json && mv temp.json trophies.json
-          fi
+          sync_counter() {
+            JSON_ID=$1
+            COMMAND=$2
+            
+            # Fetch raw data
+            RAW=$(curl -s "https://api.streamelements.com/static/v2/channels/$ACC_ID/counters/$COMMAND")
+            # Extract value with null safety
+            VAL=$(echo $RAW | jq -r '.value // 0')
+            
+            # Only update JSON if the value is a valid number greater than 0
+            if [ "$VAL" != "0" ] && [ "$VAL" != "null" ]; then
+              jq --arg id "$JSON_ID" --arg val "$VAL" '(.[] | select(.id == $id) | .current) = ($val | tonumber)' trophies.json > temp.json && mv temp.json trophies.json
+            fi
+          }
+
+          # --- 3. EXECUTE SYNC FOR EACH TRACKED TROPHY ---
+          sync_counter "spturkey" "spturkey"
+          sync_counter "rcrocodile" "rcrocodile"
+          sync_counter "rbanteng" "rbanteng"
+          sync_counter "rlevel" "rlevel"
+          sync_counter "rpaleo" "rpaleo"
 
       - name: Commit and Push
         run: |
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "actions@github.com"
           git add trophies.json
-          # Only commit and push if there is an actual change to the numbers
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Automated trophy sync: $(date)" && git push)
+          # Commit only if data actually changed
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Automated sync: $(date)" && git push)
