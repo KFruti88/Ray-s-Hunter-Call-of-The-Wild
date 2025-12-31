@@ -2,10 +2,10 @@ name: Sync Trophy Stats
 on:
   schedule:
     - cron: '*/10 * * * *' # Runs every 10 minutes
-  workflow_dispatch: # Allows manual trigger
+  workflow_dispatch: # Allows manual trigger from Actions tab
 
 permissions:
-  contents: write
+  contents: write # Grants bot permission to save changes to your repo
 
 jobs:
   sync-stats:
@@ -16,20 +16,28 @@ jobs:
 
       - name: Sync StreamElements Data
         run: |
+          # --- ACCOUNT ID ---
           ACC_ID="683d5f784b7b70b6bf43aacb"
 
+          # --- SYNC FUNCTION ---
+          # This function fetches the SE counter and updates the JSON file
           sync_counter() {
             JSON_ID=$1
             COMMAND=$2
+            
+            # Fetch raw data
             RAW=$(curl -s "https://api.streamelements.com/static/v2/channels/$ACC_ID/counters/$COMMAND")
+            # Extract value with null safety
             VAL=$(echo $RAW | jq -r '.value // 0')
             
+            # Only update JSON if the value is valid
             if [ "$VAL" != "0" ] && [ "$VAL" != "null" ]; then
               jq --arg id "$JSON_ID" --arg val "$VAL" '(.[] | select(.id == $id) | .current) = ($val | tonumber)' trophies.json > temp.json && mv temp.json trophies.json
             fi
           }
 
-          # Syncing your active grinds
+          # --- EXECUTE SYNC FOR ALL ACTIVE TRACKERS ---
+          # Format: sync_counter "JSON_ID" "STREAM_ELEMENTS_COMMAND"
           sync_counter "spturkey" "spturkey"
           sync_counter "rcrocodile" "rcrocodile"
           sync_counter "rbanteng" "rbanteng"
@@ -39,10 +47,12 @@ jobs:
           sync_counter "rpilgrim" "rpilgrim"
           sync_counter "rsheds" "rsheds"
           sync_counter "rkudu" "rkudu"
+          sync_counter "rspringbok" "rspringbok"
 
       - name: Commit and Push
         run: |
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "actions@github.com"
           git add trophies.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Automated sync: $(date)" && git push)
+          # Only commit if data actually changed to avoid junk commits
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Automated trophy sync: $(date)" && git push)
