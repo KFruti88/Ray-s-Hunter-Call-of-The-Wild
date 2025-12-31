@@ -89,4 +89,5 @@
   { "id": "rkudu", "name": "Camouflage (50 Lesser Kudu Spotted)", "current": 0, "goal": 50, "category": "Vurhonga Savanna" },
   { "id": "rspringbok", "name": "Springbok City (25 Springbok Harvested)", "current": 0, "goal": 25, "category": "Vurhonga Savanna" },
   { "id": "rlion", "name": "The Lion of Vurhonga (8 Subregions)", "current": 0, "goal": 8, "category": "Vurhonga Savanna" },
+  { "id": "spheart", "name": "You Give Love a Bad Name (10 Heart Shots)", "current": 0, "goal": 10, "category": "Base Game" },
 ]
